@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import productService from "../services/product.service";
-import { ToastAndroid } from 'react-native';
+// import { ToastAndroid } from 'react-native';
 
-//
+
 
 const ProductContext = createContext();
 
@@ -24,7 +24,7 @@ const ProductProvider = ({ children }) => {
     useEffect(() => {
         setIsLoading(true);
         productService.filterProducts(filters).then((response) => {
-            ToastAndroid.show("Products Filtered", ToastAndroid.SHORT);
+            // ToastAndroid.show("Products Filtered", ToastAndroid.SHORT);
             setProducts(response.data);
             setIsLoading(false);
         });

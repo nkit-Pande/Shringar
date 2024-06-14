@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import HomeScreen from "./screens/HomeScreen";
@@ -10,6 +10,7 @@ import ItemDescription from "./screens/ItemDescription";
 import { UserProvider } from "./context/userContext";
 import { ProductProvider } from "./context/productContext";
 
+import StarterScreen from "./screens/StarterScreen";;
 const Stack = createNativeStackNavigator();
 
 function App() {
@@ -18,7 +19,7 @@ function App() {
       <UserProvider>
         <NavigationContainer>
           <Stack.Navigator
-            initialRouteName="Home"
+            initialRouteName="Starter"
             screenOptions={{
               headerShown: false,
             }}
@@ -36,12 +37,14 @@ function App() {
               options={{ animation: "slide_from_bottom" }}
             />
             <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
+            <Stack.Screen name="Starter" component={StarterScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </UserProvider>
     </ProductProvider>
   );
 }
+
+
 
 export default App;

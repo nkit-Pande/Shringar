@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import API from "../api/axios.config";
-import WithAxios from "../helper/WithAxios";
 import authService from "../services/auth.service";
 
 const UserContext = createContext();
@@ -17,6 +16,7 @@ const UserProvider = ({ children }) => {
     useEffect(() => {
         if (isLoggedIn) {
             authService.getCurrentUser().then((res) => setUserData(res?.data));
+            console.log(userData)
         }
     }, [isLoggedIn]);
 
@@ -29,8 +29,6 @@ const UserProvider = ({ children }) => {
                     setAuthData(parsedToken);
                     setIsLoggedIn(true);
                 } catch (error) {
-                    // Handle JSON parsing error
-                    // console.error("Error parsing token:", error);
                     await AsyncStorage.removeItem("token");
                 }
             }
@@ -50,7 +48,6 @@ const UserProvider = ({ children }) => {
                 country,
             });
             setUserData(res.data);
-            console.log(res);
         } catch (error) {
             console.error("Error updating user data:", error);
         }
@@ -90,7 +87,7 @@ const UserProvider = ({ children }) => {
                 updateUserData,
             }}
         >
-            <WithAxios>{children}</WithAxios>
+            {children}
         </UserContext.Provider>
     );
 };

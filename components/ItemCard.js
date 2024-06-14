@@ -1,22 +1,24 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import React from "react";
 import { Colors } from "../color";
+import { Cpu } from "react-native-feather";
 
-export default function ItemCard(products) {
+export default function ItemCard({ product, navigation }) {
   return (
-    <TouchableOpacity style={styles.cardContainer} onPress={()=> navigation.navigate("ItemDescription")}>
-      <Image style={styles.image} source={products.image_url} />
-      <View
-        style={{
-          flex: 1,
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
-        <Text style={{ fontSize: 13, fontWeight: "400", marginRight: 90 }}>
-          {products.name}
-        </Text>
-        <Text style={{ fontSize: 13, fontWeight: "400" }}>{products.price}</Text>
+    <TouchableOpacity
+      style={styles.cardContainer}
+      onPress={() => navigation.navigate("ItemDescription", { product })}
+    >
+      <Image style={styles.image} src={product.image_url}/>
+      <View style={styles.textContainer}>
+        <Text style={styles.productName}  numberOfLines={1} ellipsizeMode="tail">{product.name}</Text>
+        <Text style={styles.productPrice}>
+          <Text 
+          style={{
+            // color:Colors.success,
+            fontSize:12
+          }}>₹</Text> 
+          {product.price}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -29,12 +31,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexWrap: "wrap",
     width: 150,
-    height: 170,
+    height: 190,
     backgroundColor: Colors.primary,
     margin: 10,
     borderRadius: 5,
     shadowColor: "black",
-    shadowOpacity: 20,
+    shadowOpacity: 0.2,
     elevation: 9,
   },
   image: {
@@ -42,5 +44,26 @@ const styles = StyleSheet.create({
     height: 130,
     backgroundColor: "white",
     marginBottom: 15,
+    borderRadius:10
+  },
+  textContainer: {
+    flexDirection: "column",
+    alignItems:'center',
+    width: '100%',
+    paddingHorizontal: 5,
+  },
+  productName: {
+    fontSize: 13,
+    fontWeight: "400",
+    color:Colors.dark,
+    fontWeight:'500'
+  },
+  productPrice: {
+    fontSize: 13,
+    fontWeight: "400",
+    color:Colors.e_orange,
+    fontWeight:'bold',
+    marginTop:3,
+    marginLeft:10
   },
 });

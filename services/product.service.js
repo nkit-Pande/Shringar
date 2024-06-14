@@ -1,5 +1,5 @@
 import API from "../api/axios.config";
-import { ToastAndroid } from 'react-native'; // Use ToastAndroid for logging
+// import { ToastAndroid } from 'react-native'; // Use ToastAndroid for logging
 
 class ProductService {
     getProducts(page) {
@@ -11,7 +11,7 @@ class ProductService {
     }
 
     getProductByName(name) {
-        ToastAndroid.show("In getProductByName service", ToastAndroid.SHORT);
+        // ToastAndroid.show("In getProductByName service", ToastAndroid.SHORT);
         return API.get(`/products/name/${name}`);
     }
 
@@ -32,7 +32,7 @@ class ProductService {
             .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(filteredFilters[key])}`)
             .join('&');
 
-        ToastAndroid.show(`In filterServices: /products/filter?${queryString}`, ToastAndroid.SHORT);
+        // ToastAndroid.show(`In filterServices: /products/filter?${queryString}`, ToastAndroid.SHORT);
 
         return API.get(`/products/filter?${queryString}`);
     }

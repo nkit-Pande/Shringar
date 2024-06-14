@@ -19,11 +19,18 @@ import Animated, {
 } from "react-native-reanimated";
 import AuthService from '../../services/auth.service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from "../../context/userContext";
+
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const {isLoggedIn,setIsLoggedIn,setUserState} = useUser();
+  //ajaypanaskar8@gmail.com
+  //Ilovemykid
+  // "email": "yadavrahul@gmail.com",
+  // "password" : "Helloworld@123"
 
   const handleLogin = async () => {
     setLoading(true);
@@ -32,8 +39,8 @@ export default function LoginScreen({ navigation }) {
       const data = await AuthService.login(username, password);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
       await AsyncStorage.setItem('token', data.token);
-      navigation.navigate('Home');
-      console.log("hello")
+      setUserState(data);
+      navigation.replace('Starter');
     } catch (e) {
       setError('Login failed. Please check your credentials.');
       console.error(e);
