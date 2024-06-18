@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import API from "../api/axios.config";
 import authService from "../services/auth.service";
+import { setupAxiosInterceptors } from '../helper/setupAxios';
 
 const UserContext = createContext();
 
@@ -16,7 +17,6 @@ const UserProvider = ({ children }) => {
     useEffect(() => {
         if (isLoggedIn) {
             authService.getCurrentUser().then((res) => setUserData(res?.data));
-            console.log(userData)
         }
     }, [isLoggedIn]);
 
@@ -29,6 +29,7 @@ const UserProvider = ({ children }) => {
                     setAuthData(parsedToken);
                     setIsLoggedIn(true);
                 } catch (error) {
+                    console.error("Error parsing token:", error);
                     await AsyncStorage.removeItem("token");
                 }
             }
@@ -48,6 +49,7 @@ const UserProvider = ({ children }) => {
                 country,
             });
             setUserData(res.data);
+            console.log(res);
         } catch (error) {
             console.error("Error updating user data:", error);
         }
@@ -73,6 +75,10 @@ const UserProvider = ({ children }) => {
         authService.logout();
     };
 
+    useEffect(() => {
+        setupAxiosInterceptors(isLoggedIn, setIsLoggedIn, setUserData, setAuthData);
+    }, [isLoggedIn, setAuthData, setIsLoggedIn, setUserData]);
+
     return (
         <UserContext.Provider
             value={{
@@ -85,6 +91,7 @@ const UserProvider = ({ children }) => {
                 authData,
                 setAuthData,
                 updateUserData,
+                setUserInfo
             }}
         >
             {children}

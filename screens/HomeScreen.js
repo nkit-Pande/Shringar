@@ -14,16 +14,22 @@ import * as Icon from "react-native-feather";
 import { Colors } from "../color";
 import ItemCard from "../components/ItemCard";
 import { useProduct } from "../context/productContext";
+import { useFonts } from "expo-font";
 
 export default function HomeScreen({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const searchTextInput = useRef(null);
-
+  const searchTextInput = useRef(null); 
+  const [fontsLoaded] = useFonts({
+    "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
+    "Poppins-Bold": require("../assets/fonts/Poppins-Bold.ttf"),
+  "Poppins-SemiBold": require('../assets/fonts/Poppins-SemiBold.ttf'),
+  });
   const { products, page, setPage, getProductByCategory, getProductByMaterial } = useProduct();
 
   const handleCategoryPress = (category) => {
-    setSelectedCategory(category);
+    setSelectedCategory(category.title);
+    category.press();
   };
 
   const handleSearchFocus = () => {
@@ -37,6 +43,7 @@ export default function HomeScreen({ navigation }) {
   const handleSearchSubmit = () => {
     searchTextInput.current.blur();
   };
+  console.log(products)
 
   const prevPage = () => {
     if (page >= 1) {
@@ -55,7 +62,7 @@ export default function HomeScreen({ navigation }) {
       title: 'All',
       press: () => {
         setPage(1);
-        getProductByCategory('Rings');
+        getProductByCategory('All');
       }
     },{
       title: 'Ring',
@@ -133,7 +140,7 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       {/* Screen Options */}
-      <View style={{ width: "100%", backgroundColor: Colors.primary }}>
+      <View style={{ width: "100%", backgroundColor: Colors.primary,paddingBottom:5 }}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -144,17 +151,14 @@ export default function HomeScreen({ navigation }) {
               key={category.title}
               style={[
                 styles.categoryContainer,
-                selectedCategory === category && styles.selectedCategoryContainer,
+                selectedCategory === category.title && styles.selectedCategoryContainer,
               ]}
-              onPress={() => {
-                handleCategoryPress(category);
-                category.press();
-              }}
+              onPress={() => handleCategoryPress(category)}
             >
               <Text
                 style={[
                   styles.category,
-                  selectedCategory === category && styles.selectedCategory,
+                  selectedCategory === category.title && styles.selectedCategory,
                 ]}
               >
                 {category.title}
@@ -175,6 +179,9 @@ export default function HomeScreen({ navigation }) {
           numColumns={2}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
+          contentContainerStyle={{
+            width:'100%',
+          }}
         />
       </View>
     </KeyboardAvoidingView>
@@ -208,51 +215,55 @@ const styles = StyleSheet.create({
   categoryContainer: {
     backgroundColor: "white",
     borderRadius: 50,
-    margin: 10,
+    margin: 4,
     borderColor: "black",
     borderWidth: 1,
   },
   selectedCategoryContainer: {
     backgroundColor: Colors.dark,
+    borderRadius:5,
+    borderWidth:2,
   },
   selectedCategory: {
     color: "white",
-    borderColor: "white",
-    borderWidth: 1,
-    borderRadius: 50,
+    paddingHorizontal:40,
+    fontFamily:'Poppins-Bold'
   },
   category: {
     color: Colors.dark,
     alignItems: "center",
     textAlign: "center",
-    fontSize: 15,
+    fontSize: 13,
     paddingTop: 5,
-    paddingBottom: 5,
+    paddingBottom: 2,
     paddingHorizontal: 20,
-    fontWeight:'500'
+    fontWeight: '500',
+    fontFamily: 'Poppins-Medium',
+    width:'auto'
   },
   productListContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,
+    flexWrap:'wrap'
   },
   footerContainer: {
-    marginTop:5,
+    marginTop: 5,
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10,
     marginHorizontal: 10,
     backgroundColor: Colors.primary,
-    height:40,
-    alignItems:'center',
-    borderRadius:5
+    height: 40,
+    alignItems: 'center',
+    borderRadius: 5
   },
   arrowButton: {
-    margin:5,
+    margin: 5,
   },
-  pageText:{
-    fontSize:15,
-    fontWeight:'600'
+  pageText: {
+    fontSize: 15,
+    fontWeight: '600'
   }
 });

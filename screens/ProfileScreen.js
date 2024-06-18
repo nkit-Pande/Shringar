@@ -21,7 +21,6 @@ export default function ProfileScreen({ navigation }) {
     setModalVisible(!isModalVisible);
   };
   console.log(userData);
-  console.log(userData);
   const logOut = () => {
     logout();
     navigation.replace("Login");

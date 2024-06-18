@@ -26,7 +26,7 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const {isLoggedIn,setIsLoggedIn,setUserState} = useUser();
+  const {isLoggedIn,setIsLoggedIn,setUserData,setUserInfo} = useUser();
   //ajaypanaskar8@gmail.com
   //Ilovemykid
   // "email": "yadavrahul@gmail.com",
@@ -39,7 +39,7 @@ export default function LoginScreen({ navigation }) {
       const data = await AuthService.login(username, password);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
       await AsyncStorage.setItem('token', data.token);
-      setUserState(data);
+      setUserInfo(data);
       navigation.replace('Starter');
     } catch (e) {
       setError('Login failed. Please check your credentials.');

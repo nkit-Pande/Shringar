@@ -2,15 +2,54 @@ import { StyleSheet, Text, View, Image, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import { Colors } from "../color";
 import * as Icon from 'react-native-feather';
-
-export default function ItemBox() {
-  
-  const [counter, changeCounter] = useState(0);
+import { useCart } from "../context/cartContext";
+import { useFonts } from 'expo-font';
+import { useWishlist } from "../context/wishlistContext";
+export default function ItemBox({ item, showRemove }) {
+  const [counter, changeCounter] = useState(1);
   const hw = 25;
+  const [ratingColor,setRatingColor] = useState('green');
+  const { deleteItem, increment, decrement } = useCart();
+  const { deleteItemFromWishlist } = useWishlist();
+  const [fontsLoaded] = useFonts({
+    'Poppins-Medium': require('../assets/fonts/Poppins-Medium.ttf'),
+    'Poppins-Bold': require('../assets/fonts/Poppins-Bold.ttf'),
+    'Poppins-SemiBold': require('../assets/fonts/Poppins-SemiBold.ttf'),
+  });
+  const avgRating = item.avg_rating ? item.avg_rating : 0.0;
+  const handleDecrease = () => {
+    if (counter > 1) {
+      decrement(item.product_id);
+      changeCounter(counter - 1);
+    } else {
+      deleteItem(item.product_id);
+    }
+  };
+  const removeItem = (item) =>{
+    deleteItemFromWishlist(item.product_id)
+  }
+
+  const handleIncrease = () => {
+    changeCounter(counter + 1);
+    increment(item.product_id);
+  };
 
   const truncatedTitle = (title) => {
-    title = title.length > 20 ? title.substring(0, 20) + '...' : title;
-    return title;
+    return title.length > 20 ? title.substring(0, 20) + '...' : title;
+  };
+
+  const ratingColorSetter = (rating) => {
+    if (rating >= 4) return Colors.success;
+    if (rating > 2 && rating < 4) return Colors.warning;
+    return 'red';
+  };
+
+  const RemoveButton = () => {
+    return (
+      <TouchableOpacity style={styles.removeButton} onPress={() => removeItem(item)}>
+        <Icon.X width={20} height={20} stroke={'white'} /> 
+      </TouchableOpacity>
+    )
   }
 
   return (
@@ -18,33 +57,52 @@ export default function ItemBox() {
       <View style={styles.container}>
         <Image
           style={styles.image}
-          src="https://www.kalyanjewellers.net/images/Jewellery/Gold/images/kajjara-nimah-gold-jhumka.jpg"
+          source={{ uri: item.image_url }}
         />
         <View style={styles.outerBox}>
           <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-            {truncatedTitle("Titleeeeeeeeeeeeeeeeeeeeeeeeeeeeee")}
+            {truncatedTitle(item.name)}
           </Text>
-          
+
           <View style={styles.innerBox}>
-            <Text style={{ color: Colors.e_orange }}>
-              Price
+            <View style={{flexDirection:'column'}}>
+            <Text style={{ color: Colors.dark, fontFamily: "Poppins-SemiBold" }}>
+              ₹{item.price}
             </Text>
-            <View style={styles.counterBox}>
-              <TouchableOpacity style={styles.iconBox1}>
-                <Icon.Minus height={hw} width={hw} stroke={'white'} />
-              </TouchableOpacity>
-              <Text style={styles.counterText}>{counter}</Text>
-              <TouchableOpacity style={styles.iconBox2}>
-                <Icon.Plus height={hw} width={hw} stroke={Colors.dark} strokeWidth={1} />
-              </TouchableOpacity>
-            </View>
+            <View style={[styles.rating,{ backgroundColor:ratingColorSetter(avgRating),}]}>
+            <Icon.Star
+              stroke={Colors.warning}
+              width={15}
+              height={15}
+              strokeWidth={1}
+              fill={Colors.warning}
+              style={{alignSelf:'center',marginRight:4}}
+            />
+            <Text style={styles.ratingText}>{avgRating}</Text>
           </View>
-          
+            </View>
+            
+              {showRemove ? (
+                <View/>
+              ) : (
+                <View style={styles.counterBox}>
+                  <TouchableOpacity style={styles.iconBox1} onPress={handleDecrease}>
+                    <Icon.Minus height={hw} width={hw} stroke={'white'} />
+                  </TouchableOpacity>
+                  <Text style={styles.counterText}>{counter}</Text>
+                  <TouchableOpacity style={styles.iconBox2} onPress={handleIncrease}>
+                    <Icon.Plus height={hw} width={hw} stroke={Colors.dark} strokeWidth={1} />
+                  </TouchableOpacity>
+                  </View>
+              )}
+          </View>
         </View>
       </View>
-      {/* <TouchableOpacity style={styles.remove}>
-            <Icon.X width={15} height={15} stroke={'white'} />
-      </TouchableOpacity> */}
+      {showRemove ?(
+        <RemoveButton />
+      ):(
+        <View/>
+      )}
     </View>
   );
 }
@@ -61,7 +119,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 5,
-    borderRadius: 10,
+    borderRadius: 5,
     alignItems: 'center'
   },
   image: {
@@ -77,13 +135,13 @@ const styles = StyleSheet.create({
     width: '72%'
   },
   title: {
-    fontSize: 14,
+    fontSize: 16,
     color: Colors.dark,
     marginTop: 10,
-    fontWeight: '500'
+    fontFamily: 'Poppins-Medium',
   },
   innerBox: {
-    marginTop: 10,
+    marginTop: 5,
     marginLeft: 5,
     justifyContent: 'space-between',
     flexDirection: 'row'
@@ -102,23 +160,44 @@ const styles = StyleSheet.create({
   iconBox1: {
     borderWidth: 2,
     borderRadius: 10,
-    backgroundColor: Colors.dark
+    backgroundColor: Colors.dark,
+    height:30
   },
   iconBox2: {
     borderWidth: 2,
     borderRadius: 10,
-    borderColor: Colors.dark
+    borderColor: Colors.dark,
+    height:30
   },
-  remove: {
-    // alignItems: 'center',
-    // alignSelf: 'flex-start',
-    // backgroundColor:'grey',
-    // padding:3,
-    // backgroundColor:Colors.danger,
-    // borderRadius:30,
-    // position:'absolute',
-    // left:297,
-    // top:5
+  removeButton: {
+    backgroundColor: Colors.dark,
+    borderRadius: 50,
+    flexDirection:'row',
+    height:30,
+    width:30,
+    position:'absolute',
+    right:10,top:10,
+    justifyContent:'center',
+    alignItems:'center'
+  },
+  removeButtonText: {
+    fontFamily: 'Poppins-Medium',
+    color: 'white'
+  } ,
+  rating: {
+    flex:1,
+    marginLeft: 5,
+    borderRadius: 5,
+    flexDirection: "row",
+    alignItems:"flex-start",
+    marginTop:5,
+    marginBottom:3,
+    justifyContent:'center',
+    borderRadius:5,
+  },
+  ratingText:{
+    color:'white',
+    fontFamily:'Poppins-Medium',
+    marginEnd:3
   }
 });
-

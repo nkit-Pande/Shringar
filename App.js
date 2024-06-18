@@ -7,44 +7,51 @@ import SignUpScreen from "./screens/SignUp/SignUpScreen";
 import SplashScreen from "./screens/SplashScreen";
 import BoardingScreen from "./screens/BoardingScreen";
 import ItemDescription from "./screens/ItemDescription";
+import StarterScreen from "./screens/StarterScreen";
 import { UserProvider } from "./context/userContext";
 import { ProductProvider } from "./context/productContext";
+import { WishlistProvider } from "./context/wishlistContext";
+import { CartProvider } from "./context/cartContext";
+import { ToastProvider } from 'react-native-toast-notifications';
 
-import StarterScreen from "./screens/StarterScreen";;
 const Stack = createNativeStackNavigator();
 
 function App() {
   return (
-    <ProductProvider>
+    <ToastProvider>
       <UserProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            initialRouteName="Starter"
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen name="Boarding" component={BoardingScreen} />
-            <Stack.Screen name="Splash" component={SplashScreen} />
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ animation: "fade" }}
-            />
-            <Stack.Screen
-              name="ItemDescription"
-              component={ItemDescription}
-              options={{ animation: "slide_from_bottom" }}
-            />
-            <Stack.Screen name="SignUp" component={SignUpScreen} />
-            <Stack.Screen name="Starter" component={StarterScreen} />
-          </Stack.Navigator>
-        </NavigationContainer>
+        <CartProvider>
+          <WishlistProvider>
+            <ProductProvider>
+              <NavigationContainer>
+                <Stack.Navigator
+                  initialRouteName="Starter"
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                >
+                  <Stack.Screen name="Boarding" component={BoardingScreen} />
+                  <Stack.Screen name="Splash" component={SplashScreen} />
+                  <Stack.Screen
+                    name="Login"
+                    component={LoginScreen}
+                    options={{ animation: "fade" }}
+                  />
+                  <Stack.Screen
+                    name="ItemDescription"
+                    component={ItemDescription}
+                    options={{ animation: "slide_from_bottom" }}
+                  />
+                  <Stack.Screen name="SignUp" component={SignUpScreen} />
+                  <Stack.Screen name="Starter" component={StarterScreen} />
+                </Stack.Navigator>
+              </NavigationContainer>
+            </ProductProvider>
+          </WishlistProvider>
+        </CartProvider>
       </UserProvider>
-    </ProductProvider>
+    </ToastProvider>
   );
 }
-
-
 
 export default App;

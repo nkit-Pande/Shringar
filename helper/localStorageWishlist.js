@@ -32,7 +32,7 @@ class LocalWishlist {
     if (items.some((prod) => prod.product_id === product.product_id)) {
       return;
     } else {
-      await this.saveItems([...items, { product_id: product.product_id }]);
+      await this.saveItems([...items, product]);
     }
   };
 }

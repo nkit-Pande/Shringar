@@ -1,6 +1,16 @@
 {
   "expo": {
     "name": "shringar",
-    "slug": "shringar"
+    "slug": "shringar",
+    "plugins": [
+      "expo-font"
+    ]
+  },
+  "expo-font": {
+    "fonts": [
+      "./assets/fonts/Poppins-Medium.ttf",
+      "./assets/fonts/Poppins-SemiBold.ttf",
+      "./assets/fonts/Poppins-Bold.ttf"
+    ]
   }
 }

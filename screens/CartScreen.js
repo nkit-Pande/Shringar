@@ -9,31 +9,67 @@ import {
   FlatList,
   Modal,
   TouchableWithoutFeedback,
+  Image,
 } from "react-native";
 import { Colors } from "../color";
 import * as Icon from "react-native-feather";
 import StepIndicator from "react-native-step-indicator";
 import { useNavigation } from "@react-navigation/native";
 import ItemBox from "../components/ItemBox";
+import { useCart } from "../context/cartContext";
+import { useFonts } from 'expo-font';
 
-const labels = ["Cart", "Delivery", "Payment Method"];
+const labels = ["Cart", "Delivery", "Payment"];
 const count = [1, 2, 3, 4, 5, 6];
 export default function CartScreen({ navigation }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [checked, setChecked] = useState("first");
-
+  const {cartData,cartTotal,cartSubTotal} = useCart();
   const [selectedId, setSelectedId] = useState();
+  const [fontsLoaded] = useFonts({
+    'Poppins-Medium': require('../assets/fonts/Poppins-Medium.ttf'),
+    'Poppins-Bold': require('../assets/fonts/Poppins-Bold.ttf'),
+    'Poppins-SemiBold': require('../assets/fonts/Poppins-SemiBold.ttf'),
+    
+  });
+  const items = cartData.items;
+  // console.log("cart")
+  console.log(items)
 
   const handleProceed = () => {
     setCurrentStep((prevStep) =>
       prevStep < labels.length - 1 ? prevStep + 1 : prevStep
     );
   };
+  const renderStepIndicator = ({ position, stepStatus }) => {
+    const isCurrentStep = stepStatus === "current";
+    const isFinishedStep = stepStatus === "finished";
+    const icons = [
+      <Icon.ShoppingCart
+        stroke={isCurrentStep || isFinishedStep ? "#ffffff" : Colors.dark}
+        width={20}
+        height={20}
+        style={{ marginRight: 3 }}
+      />,
+      <Icon.Truck
+        stroke={isCurrentStep || isFinishedStep ? "#ffffff" : Colors.dark}
+        width={20}
+        height={20}
+      />,
+      <Icon.CreditCard
+        stroke={isCurrentStep || isFinishedStep ? "#ffffff" : Colors.dark}
+        width={20}
+        height={20}
+      />,
+    ];
+    return icons[position];
+  };
+
 
   const handleBack = () => {
     if (currentStep === 0) {
-      navigation.navigate("Home");
+      navigation.goBack();
     } else {
       setCurrentStep((prevStep) => (prevStep > 0 ? prevStep - 1 : prevStep));
     }
@@ -52,23 +88,27 @@ export default function CartScreen({ navigation }) {
         customStyles={customStyles}
         currentPosition={currentStep}
         labels={labels}
+        renderStepIndicator={renderStepIndicator}
       />
-      {currentStep === 0 && <CarList count={count} />}
+      {currentStep === 0 && <CarList items={items}/>}
       {currentStep === 1 && (
         <DeliveryMethod checked={checked} setChecked={setChecked} />
       )}
       {currentStep === 2 && <Payment />}
 
+        {/* <Payment/> */}
+
       <InfoModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
+        cartTotal={cartSubTotal}
       />
-      <Footer proceed={handleProceed} setModalVisible={setModalVisible} />
+      <Footer proceed={handleProceed} setModalVisible={setModalVisible} cartTotal={cartSubTotal}/>
     </View>
   );
 }
 
-const Header = ({ onBack, customStyles, currentPosition, labels }) => (
+const Header = ({ onBack, customStyles, currentPosition, labels,renderStepIndicator }) => (
   <View style={styles.headerWrapper}>
     <View style={styles.headerContainer}>
       <TouchableOpacity onPress={onBack}>
@@ -96,25 +136,37 @@ const Header = ({ onBack, customStyles, currentPosition, labels }) => (
         labels={labels}
         stepCount={labels.length}
         direction="horizontal"
+        renderStepIndicator={renderStepIndicator}
       />
     </View>
   </View>
 );
 
-const CarList = ({ count }) => {
+const CarList = ({ items }) => {
   return (
-    <FlatList
-      data={count}
-      renderItem={() => <ItemBox />}
-      contentContainerStyle={styles.itemList}
-      showsVerticalScrollIndicator={false}
-    />
+    <>
+      {items.length > 0 ? (
+        <FlatList
+          data={items}
+          renderItem={({ item }) => <ItemBox item={item} showRemove={false}/>}
+          contentContainerStyle={styles.itemList}
+        />
+      ) : (
+        <View style={{flex:.7,justifyContent:'center',alignItems:'center'}}>
+          <Image source={require('../TestImages/undraw_empty_cart_co35.png')} style={styles.emptyCartImage} resizeMode="cover"/>
+          <Text style={styles.emptyCartText}>
+            Cart is empty
+          </Text>
+        </View>
+      )}
+    </>
   );
 };
-
 const DeliveryMethod = ({ checked, setChecked }) => {
   return (
     <View style={styles.deliveryContainer}>
+
+      {/* Method Choose */}
       <Text style={styles.deliveryHeaderText}>Choose the Delivery Method</Text>
       <View style={styles.innerRadioContainer}>
         <TouchableOpacity
@@ -177,6 +229,10 @@ const DeliveryMethod = ({ checked, setChecked }) => {
           </View>
         </TouchableOpacity>
       </View>
+
+          
+      {/* Delivery Address     */}
+
       <Text style={[styles.deliveryHeaderText, { paddingTop: 10 }]}>
         Delivery Address
       </Text>
@@ -204,17 +260,24 @@ const DeliveryMethod = ({ checked, setChecked }) => {
           </Text>
         </View>
       </View>
+
+      
+
     </View>
   );
 };
+
 const Payment = () => {
   return (
     <View>
-      <Text>Payment</Text>
+      <Text style={styles.paymentTitle}>Order Summary</Text>
+
     </View>
   );
 };
-const DetailCard = () => {
+
+
+const DetailCard = ({cartTotal}) => {
   return (
     <View style={styles.detailCard}>
       <View style={styles.detailRows}>
@@ -236,12 +299,14 @@ const DetailCard = () => {
       <View style={styles.divider} />
       <View style={styles.detailRows}>
         <Text style={styles.leftText}>Total</Text>
-        <Text style={[styles.rightText, { color: Colors.e_orange }]}>200</Text>
+        <Text style={[styles.rightText, { color: Colors.e_orange }]}>{cartTotal}</Text>
       </View>
     </View>
   );
 };
-const InfoModal = ({ modalVisible, setModalVisible }) => (
+
+
+const InfoModal = ({ modalVisible, setModalVisible,cartTotal}) => (
   <Modal
     animationType="slide"
     visible={modalVisible}
@@ -286,15 +351,17 @@ const InfoModal = ({ modalVisible, setModalVisible }) => (
           Detail
         </Text>
       </View>
-      <DetailCard />
+      <DetailCard cartTotal={cartTotal} />
     </View>
   </Modal>
 );
-const Footer = ({ proceed, setModalVisible }) => (
+
+
+const Footer = ({ proceed, setModalVisible,cartTotal }) => (
   <View style={styles.footer}>
     <Text style={styles.footerText}>Total</Text>
     <View style={styles.footerContent}>
-      <Text style={styles.paymentTotalText}>₹1043</Text>
+      <Text style={styles.paymentTotalText}>₹{cartTotal}</Text>
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <TouchableOpacity style={{ padding: 5 }}>
           <Icon.Info
@@ -319,13 +386,13 @@ const customStyles = {
   separatorStrokeWidth: 3,
   currentStepStrokeWidth: 3,
   stepStrokeCurrentColor: Colors.dark,
-  stepStrokeWidth: 3,
+  stepStrokeWidth: 2,
   stepStrokeFinishedColor: Colors.dark,
   stepStrokeUnFinishedColor: "#aaaaaa",
   separatorFinishedColor: Colors.dark,
   separatorUnFinishedColor: "#aaaaaa",
   stepIndicatorFinishedColor: Colors.dark,
-  stepIndicatorUnFinishedColor: "#ffffff",
+  stepIndicatorUnFinishedColor: 'white',
   stepIndicatorCurrentColor: Colors.dark,
   stepIndicatorLabelFontSize: 10,
   currentStepIndicatorLabelFontSize: 13,
@@ -360,9 +427,9 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 24,
-    fontWeight: "bold",
     marginBottom: 8,
     marginRight: 20,
+    fontFamily:'Poppins-SemiBold'
   },
   stepIndicatorContainer: {
     width: "100%",
@@ -387,7 +454,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 13,
-    fontWeight: "300",
+    fontFamily:'Poppins-SemiBold'
   },
   footerContent: {
     flexDirection: "row",
@@ -396,7 +463,7 @@ const styles = StyleSheet.create({
   },
   paymentTotalText: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontFamily:'Poppins-SemiBold'
   },
   paymentProceedButton: {
     backgroundColor: Colors.dark,
@@ -408,9 +475,10 @@ const styles = StyleSheet.create({
   paymentProceedButtonText: {
     color: "white",
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily:'Poppins-SemiBold'
   },
   itemList: {
+    width:'100%',
     paddingBottom: 80,
   },
   detailCard: {
@@ -474,6 +542,7 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "500",
     alignSelf: "center",
+    fontFamily:'Poppins-SemiBold'
   },
   radioButtonContainer: {
     width: "100%",
@@ -490,10 +559,9 @@ const styles = StyleSheet.create({
   },
   singleBox: {
     height: 100,
-    // borderColor:'red',
     borderWidth: 1,
     marginTop: 10,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -503,17 +571,32 @@ const styles = StyleSheet.create({
   },
   singleBoxHeaderText: {
     fontSize: 17,
-    fontWeight: "800",
     paddingTop: 20,
+    fontFamily:'Poppins-SemiBold'
   },
   singleBoxBodyText: {
     paddingBottom: 20,
     marginTop: 5,
-    fontWeight: "300",
+    fontFamily:'Poppins-Medium',
+    fontSize:12
   },
   radioIcon: {
     padding: 20,
     alignItems: "center",
     justifyContent: "center",
   },
+  paymentTitle:{
+    fontSize:15,
+    fontWeight:'bold',
+    alignSelf:'center'
+  },
+  emptyCartText:{
+    fontSize:20,
+    paddingBottom:10,
+    fontWeight:'bold'
+  },
+  emptyCartImage:{
+    height:200,
+    width:200,
+  }
 });

@@ -2,6 +2,7 @@ import { Image, StatusBar, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import Onboarding from "react-native-onboarding-swiper";
 import * as Animatable from "react-native-animatable";
+
 export default function BoardingScreen({navigation}) {
   const whenDone = ()=>(
     navigation.replace('Login')

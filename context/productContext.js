@@ -1,83 +1,117 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import productService from "../services/product.service";
-// import { ToastAndroid } from 'react-native';
-
-
 
 const ProductContext = createContext();
 
 const ProductProvider = ({ children }) => {
-    const [products, setProducts] = useState(null);
+    const [products, setProducts] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [filters, setFilters] = useState({});
-    
-    //adding product in setProduct
-    useEffect(() => {
+    const [product, setProduct] = useState(null);
+
+    const fetchProducts = useCallback(async () => {
         setIsLoading(true);
-        productService.getProducts(page).then((response) => {
+        try {
+            const response = await productService.getProducts(page);
             setProducts(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
             setIsLoading(false);
-        });
+        }
     }, [page]);
 
-    useEffect(() => {
+    const fetchFilteredProducts = useCallback(async () => {
         setIsLoading(true);
-        productService.filterProducts(filters).then((response) => {
-            // ToastAndroid.show("Products Filtered", ToastAndroid.SHORT);
+        try {
+            const response = await productService.filterProducts(filters);
             setProducts(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
             setIsLoading(false);
-        });
+        }
     }, [filters]);
 
-    const getProductsByName = (name) => {
+    useEffect(() => {
+        fetchProducts();
+    }, [page, fetchProducts]);
+
+    useEffect(() => {
+        fetchFilteredProducts();
+    }, [filters, fetchFilteredProducts]);
+
+    const getProductsByName = async (name) => {
         setIsLoading(true);
-        console.log("Inside getProductByName");
-        productService.getProductByName(name).then((response) => {
-            console.log(response.data);
+        try {
+            const response = await productService.getProductByName(name);
             setProducts([response.data]);
-            console.log(products);
+        } catch (error) {
+            console.error(error);
+        } finally {
             setIsLoading(false);
-        });
+        }
     };
 
-    const getProductByCategory = (category) => {
+    const getProductsById = async (id) => {
         setIsLoading(true);
-        productService.getProductsByCategory(category).then((response) => {
-            setProducts(response.data);
+        try {
+            const response = await productService.getProduct(id);
+            setProduct(response.data);
+            
+        } catch (error) {
+            console.error(error);
+        } finally {
             setIsLoading(false);
-        });
+        }
     };
 
-    const getProductByMaterial = (material) => {
+    
+
+    const getProductByCategory = async (category) => {
         setIsLoading(true);
-        console.log("It is present");
-        productService.getProductsByMaterialType(material).then((response) => {
+        try {
+            const response = await productService.getProductsByCategory(category);
             setProducts(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
             setIsLoading(false);
-        });
+        }
+    };
+
+    const getProductByMaterial = async (material) => {
+        setIsLoading(true);
+        try {
+            const response = await productService.getProductsByMaterialType(material);
+            setProducts(response.data);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const updateFilters = (newFilters) => {
         setFilters(newFilters);
     };
 
+    const value = {
+        products,
+        isLoading,
+        page,
+        setPage,
+        filters,
+        updateFilters,
+        getProductsByName,
+        getProductByCategory,
+        getProductByMaterial,
+        getProductsById
+    };
+
     return (
-        <ProductContext.Provider
-            value={{
-                products,
-                setProducts,
-                isLoading,
-                setIsLoading,
-                page,
-                setPage,
-                filters,
-                updateFilters,
-                getProductsByName,
-                getProductByCategory,
-                getProductByMaterial,
-            }}
-        >
+        <ProductContext.Provider value={value}>
             {children}
         </ProductContext.Provider>
     );
@@ -85,7 +119,7 @@ const ProductProvider = ({ children }) => {
 
 const useProduct = () => {
     const context = useContext(ProductContext);
-    if (context === undefined) {
+    if (!context) {
         throw new Error("useProduct must be used within a ProductProvider");
     }
     return context;
